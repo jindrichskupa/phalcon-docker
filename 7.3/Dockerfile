@@ -1,0 +1,96 @@
+FROM debian:buster
+
+MAINTAINER Jindrich Skupa <jindrich.skupa@gmail.com>
+
+# Timezone
+ENV TZ=Europe/Prague
+
+RUN \
+  apt-get update && \
+  apt-get install -y \
+  wget gnupg apt-transport-https curl && \
+  apt-get autoremove -y && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists  
+
+RUN echo "deb https://deb.nodesource.com/node_12.x stretch main" > /etc/apt/sources.list.d/nodesource.list && \
+    echo "deb-src https://deb.nodesource.com/node_12.x stretch main" >> /etc/apt/sources.list.d/nodesource.list && \
+    wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
+    wget -qO- https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh | bash 
+
+
+RUN \
+  apt-get update && \
+  apt-get install -y \
+    unzip \
+    vim \
+    git \
+    apt-transport-https \
+    locales \
+    iptables \
+    apache2 \
+    php7.3 \
+    php7.3-mysql \
+    php7.3-pgsql \
+    php7.3-mbstring \
+    php7.3-gd \
+    php7.3-memcache \
+    php7.3-zip \
+    php7.3-curl \
+    php-pear \
+    php7.3-apcu \
+    php7.3-cli \
+    php7.3-sqlite \
+    php7.3-intl \
+    php7.3-tidy \
+    php7.3-imap \
+    php7.3-json \
+    php7.3-imagick \
+    php7.3-xml \
+    php7.3-common \
+    php7.3-phalcon \
+    libapache2-mod-php7.3 \
+    libapache2-mod-rpaf \
+    nodejs && \
+  npm install -g gulp yarn && \
+  a2enmod proxy && \
+  a2enmod proxy_http && \
+  a2enmod alias && \
+  a2enmod dir && \
+  a2enmod env && \
+  a2enmod mime && \
+  a2enmod reqtimeout && \
+  a2enmod rewrite && \
+  a2enmod status && \
+  a2enmod filter && \
+  a2enmod deflate && \
+  a2enmod setenvif && \
+  a2enmod vhost_alias && \
+  a2enmod headers && \
+  a2enmod ssl && \
+  a2enmod php7.3 && \
+  apt install -y php-dev && \
+  pecl install psr && \
+  echo "extension=psr.so" > /etc/php/7.3/apache2/conf.d/40-psr.ini && \
+  echo "extension=psr.so" > /etc/php/7.3/cli/conf.d/40-psr.ini && \
+  apt purge -y php-dev && \
+  apt-get autoremove -y && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists
+
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
+  composer global require 'laravel/installer' && \
+  echo 'export PATH=$PATH:$HOME/.composer/vendor/bin' >> $HOME/.bash_profile && \
+  curl -sLO https://deployer.org/deployer.phar && mv deployer.phar /usr/local/bin/dep && \
+  chmod +x /usr/local/bin/dep
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
+  && dpkg-reconfigure --frontend noninteractive tzdata \
+  && echo 'en_US.UTF-8 UTF-8\ncs_CZ.UTF-8 UTF-8\n' >> /etc/locale.gen \
+  && /usr/sbin/locale-gen
+
+RUN ln -sf /dev/stderr /var/log/apache2/error.log
+
+EXPOSE 80
+CMD ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]

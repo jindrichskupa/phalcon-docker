@@ -1,0 +1,24 @@
+image: docker:latest
+services:
+  - docker:dind
+stages:
+  - build
+
+variables:
+  DOCKER_DRIVER: overlay
+  DOCKER_HOST: 'unix:///var/run/docker.sock'
+  CONTAINER_IMAGE: zalepto/php-phalcon
+
+before_script:
+  - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASS
+
+build:push:
+  stage: build
+  script:
+    - cd 7.3 && docker build --pull --force-rm -t ${CONTAINER_IMAGE}:7.3 --file Dockerfile . && cd -
+    - cd 5.6 && docker build --pull --force-rm -t ${CONTAINER_IMAGE}:5.6 --file Dockerfile . && cd -
+    - docker push ${CONTAINER_IMAGE}:7.3
+    - docker push ${CONTAINER_IMAGE}:5.6
+  tags:
+    - docker-build
+
