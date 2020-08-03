@@ -45,6 +45,8 @@ RUN \
     php7.3-tidy \
     php7.3-imap \
     php7.3-json \
+    php-redis \
+    php7.3-soap \
     php7.3-imagick \
     php7.3-xml \
     php7.3-common \

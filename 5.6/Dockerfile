@@ -13,8 +13,8 @@ RUN \
   apt-get clean && \
   rm -rf /var/lib/apt/lists 
 
-RUN echo "deb https://deb.nodesource.com/node_12.x jessie main" > /etc/apt/sources.list.d/nodesource.list && \
-  echo "deb-src https://deb.nodesource.com/node_12.x jessie main" >> /etc/apt/sources.list.d/nodesource.list && \
+RUN echo "deb https://deb.nodesource.com/node_11.x jessie main" > /etc/apt/sources.list.d/nodesource.list && \
+  echo "deb-src https://deb.nodesource.com/node_11.x jessie main" >> /etc/apt/sources.list.d/nodesource.list && \
   wget -qO- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
   sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
   sed -i '/jessie-updates/d' /etc/apt/sources.list && \
@@ -40,6 +40,7 @@ RUN \
     php-pear \
     php5-apcu \
     php5-pgsql \
+    php5-soap \
     php5-cli \
     php5-curl \
     php5-mcrypt \
@@ -52,7 +53,8 @@ RUN \
     php5-common \
     php5-phalcon \
     libapache2-mod-php5 \
-    libapache2-mod-rpaf && \
+    libapache2-mod-rpaf \
+    nodejs && \
   a2enmod proxy && \
   a2enmod proxy_http && \
   a2enmod alias && \
@@ -73,7 +75,8 @@ RUN \
   rm -rf /var/lib/apt/lists
 
 # Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
+  npm install bower -g
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
   && dpkg-reconfigure --frontend noninteractive tzdata \
